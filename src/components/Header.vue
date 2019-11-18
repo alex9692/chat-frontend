@@ -36,7 +36,7 @@
 					active-class="active"
 					class="header__list--item"
 				>SignUp</router-link>
-				<li v-if="isAuth" active-class="active" class="header__list--item">Logout</li>
+				<li v-if="isAuth" active-class="active" class="header__list--item" @click="logout">Logout</li>
 			</ul>
 		</div>
 	</div>
@@ -50,6 +50,9 @@
 			...mapState(["isAuth"])
 		},
 		methods: {
+			logout() {
+				this.$store.dispatch("logout");
+			},
 			slide() {
 				this.$emit("slide");
 			}

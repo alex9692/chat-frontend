@@ -20,7 +20,6 @@
 		},
 		methods: {
 			submit() {
-				console.log('aa')
 				this.$store.dispatch("enterRoom", { lobbyName: this.lobbyName });
 			}
 		}
