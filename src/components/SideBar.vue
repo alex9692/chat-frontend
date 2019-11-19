@@ -1,18 +1,16 @@
 <template>
 	<div class="sidebar">
-		<h2 class="sidebar__title">List of Rooms:</h2>
+		<h2 class="sidebar__title">My Rooms:</h2>
 
 		<ul class="sidebar__list">
-			<li
-				class="sidebar__items"
-				v-for="lobby in lobbies"
-				:key="lobby._id"
-				@click="showAlert(lobby._id)"
-			>
-				<div>
-					<span style="cursor:default">{{lobby.lobbyName}}</span>
+			<li class="sidebar__items" v-for="lobby in lobbies" :key="lobby._id" @click="showAlert(lobby)">
+				<div v-if="isAuth">
+					<p>{{lobby.lobbyName}}</p>
+				</div>
+				<div v-else>
+					<p>{{lobby.lobbyName}}</p>
 					<p
-						v-if="showTip && selectedLobby===lobby._id"
+						v-if="showTip && selectedLobby._id===lobby._id"
 						class="tooltip"
 					>You need to be logged in to continue.</p>
 				</div>
@@ -27,21 +25,26 @@
 		data() {
 			return {
 				showTip: false,
-				selectedLobby: ""
+				selectedLobby: null
 			};
 		},
 		methods: {
-			showAlert(lobbyId) {
+			showAlert(lobby) {
 				if (!this.isAuth) {
 					if (this.showTip) {
 						return;
 					}
 					this.showTip = true;
-					this.selectedLobby = lobbyId;
+					this.selectedLobby = lobby;
 					setTimeout(() => {
 						this.showTip = false;
-						this.selectedLobby = "";
+						this.selectedLobby = null;
 					}, 5000);
+				} else {
+					this.$store.dispatch("enterRoom", {
+						lobbyName: lobby.lobbyName
+					});
+					this.$emit("close");
 				}
 			}
 		},
@@ -86,8 +89,6 @@
 		padding: 0 0.5rem;
 		color: rgb(32, 57, 73);
 		padding: 0.2 1rem;
-	}
-	.sidebar__items a {
 		cursor: pointer;
 	}
 	.sidebar__items:hover {

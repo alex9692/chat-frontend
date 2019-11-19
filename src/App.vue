@@ -6,7 +6,7 @@
 		</transition>
 
 		<transition name="slide">
-			<SideBar v-if="show" />
+			<SideBar v-if="show" @close="closeSideBar" />
 		</transition>
 		<transition>
 			<router-view></router-view>
@@ -31,6 +31,9 @@
 		methods: {
 			followUp() {
 				this.show = !this.show;
+			},
+			closeSideBar() {
+				this.show = false;
 			}
 		}
 	};
@@ -98,5 +101,10 @@
 		height: 100vh;
 		background: rgba(0, 0, 0, 0.75);
 		z-index: 5;
+	}
+
+	::placeholder{
+		color: rgba(30, 37, 44, 0.74);
+		font-size: 12px;
 	}
 </style>

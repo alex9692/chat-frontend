@@ -4,7 +4,7 @@
 			<h1 class="header__title">
 				<router-link to="/">VueChat</router-link>
 			</h1>
-			<p @click="slide" class="header__list--item brand" :class="{'activeRooms': show}">View Rooms</p>
+			<p @click="slide" v-if="isAuth" class="header__list--item brand" :class="{'activeRooms': show}">View Rooms</p>
 		</div>
 		<div>
 			<ul class="header__list">

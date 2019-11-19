@@ -16,16 +16,17 @@ export default new Vuex.Store({
     selectedLobby: null,
     messages: [],
     socket: null,
-    lobbies: []
+    lobbies: [],
+    error: null
   },
   mutations: {
     setUserData: (state, payload) => {
       state.token = payload.token;
       state.userId = payload.userId;
     },
-    setSocket: state => {
-      state.socket = io('http://localhost:5001');
-      state.socket.emit('connection-established', state.userId);
+    setSocket: (state, payload) => {
+      if (!state.socket) state.socket = io('http://localhost:5001');
+      state.socket.emit(payload, state.userId);
     },
     setAuth: (state, payload) => {
       state.isAuth = payload;
@@ -44,6 +45,12 @@ export default new Vuex.Store({
     },
     setAllLobbies: (state, payload) => {
       state.lobbies = payload;
+    },
+    setError: (state, payload) => {
+      state.error = payload;
+      setTimeout(() => {
+        state.error = null;
+      }, 5000);
     }
   },
   actions: {
@@ -53,27 +60,35 @@ export default new Vuex.Store({
 
         commit('setUserData', response.data.data);
         commit('setAuth', true);
-        commit('setSocket');
+        commit('setSocket', 'connection-established');
         router.push('/enter-room');
       } catch (error) {
+        commit('setError', error.response.data);
         console.log(error.response);
       }
     },
-    register: async (_, payload) => {
+    register: async ({ commit }, payload) => {
       try {
         await userInstance.post('/sign-up', payload);
         router.push('/sign-in');
       } catch (error) {
+        if (error.response.data.message.includes('duplicate')) {
+          commit('setError', { message: 'User already exist!' });
+        }
         console.log(error.response);
       }
     },
-    enterRoom: async ({ commit, state }, payload) => {
+    enterRoom: async ({ commit }, payload) => {
       try {
         const response = await lobbyInstance.get('/', { params: payload });
+        if (response.data.results === 0) {
+          throw new Error("Lobby doesn't exist");
+        }
         commit('setSelectedLobby', response.data.data.lobbies[0]);
         router.push(`/room/${response.data.data.lobbies[0]._id}`);
       } catch (error) {
-        console.log(error.response);
+        commit('setError', { message: error.message });
+        console.log(error.message);
       }
     },
     submitMessage: async ({ state }, payload) => {
@@ -110,19 +125,24 @@ export default new Vuex.Store({
     pushMessage: ({ commit }, payload) => {
       commit('pushNewMessage', payload);
     },
-    getLobbyList: async ({ commit }) => {
+    getLobbyList: async ({ commit, state }) => {
       try {
-        const response = await lobbyInstance.get('/');
+        const response = await lobbyInstance.get('/', {
+          params: { id: state.userId }
+        });
         commit('setAllLobbies', response.data.data.lobbies);
       } catch (error) {
         console.log(error.response);
       }
     },
     logout: ({ commit, state }) => {
-      commit('setUserData', { token: '', userId: '' });
       commit('setAuth', false);
       commit('setUser', null);
-      state.socket.emit('disconnect');
+      commit('setSelectedLobby', null);
+      commit('setSelectedLobbyMessages', []);
+      commit('setAllLobbies', []);
+      commit('setSocket', 'log-out');
+      commit('setUserData', { token: '', userId: '' });
       router.replace('/');
     }
   },

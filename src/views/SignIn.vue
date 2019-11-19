@@ -11,7 +11,7 @@
 					class="sign-in__input"
 					ref="usernameCheck"
 					@blur="checkUsername"
-					placeholder="enter your username"
+					placeholder="username must be atleast 4 characters long"
 				/>
 				<label for="password">Enter User password:</label>
 				<input
@@ -21,7 +21,7 @@
 					class="sign-in__input"
 					ref="passwordCheck"
 					@blur="checkPassword"
-					placeholder="enter your password"
+					placeholder="password must be atleast 8 characters long"
 				/>
 				<label for="confirm-password">Confirm User password:</label>
 				<input
@@ -34,12 +34,14 @@
 					placeholder="enter confirmation password"
 				/>
 			</div>
+			<div v-if="error" class="error">{{error.message}}</div>
 			<button :disabled="!allowSubmit" class="sign-in__button" @click="submit">Submit</button>
 		</div>
 	</div>
 </template>
 
 <script>
+	import { mapState } from "vuex";
 	export default {
 		data() {
 			return {
@@ -49,6 +51,7 @@
 			};
 		},
 		computed: {
+			...mapState(["error"]),
 			allowSubmit() {
 				return (
 					this.username &&
@@ -177,5 +180,10 @@
 	.sign-in__input.invalid {
 		border: 1px solid rgb(121, 9, 9);
 		background: rgb(153, 65, 65);
+	}
+	.error {
+		color: rgb(153, 65, 65);
+		margin: 0 auto;
+		margin-top: 0.4rem;
 	}
 </style>

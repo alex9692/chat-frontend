@@ -7,20 +7,25 @@
 				<input v-model="lobbyName" id="chat" type="text" class="enter-room__input" />
 				<button @click="submit" class="enter-room__button">Submit</button>
 			</div>
+			<div v-if="error" class="error">{{error.message}}</div>
 		</div>
 	</div>
 </template>
 
 <script>
+	import { mapState } from "vuex";
 	export default {
 		data() {
 			return {
 				lobbyName: ""
 			};
 		},
+		computed: {
+			...mapState(["selectedLobby", "error"])
+		},
 		methods: {
 			submit() {
-				this.$store.dispatch("enterRoom", { lobbyName: this.lobbyName });
+				this.$store.dispatch("enterRoom", { lobbyName: this.lobbyName.trim() });
 			}
 		}
 	};
@@ -96,5 +101,11 @@
 		.enter-room__container {
 			flex-wrap: nowrap;
 		}
+	}
+
+	.error {
+		color: rgb(153, 65, 65);
+		margin: 0 auto;
+		margin-top: 0.4rem;
 	}
 </style>

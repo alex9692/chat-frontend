@@ -3,29 +3,38 @@
 		<h4 class="chat-body__lobbyname">Lobby: {{selectedLobby.lobbyName}}</h4>
 		<p class="chat-body__username">#{{user.username}}</p>
 		<input type="text" class="chat-body__input" v-model="message" placeholder="Enter message....." />
-		<div class="chat-body__messages-container">
-			<ul class="chat-body__messages-list" v-for="message in messages" :key="message._id">
-				<li class="chat-body__messages-item">
-					<div class="chat-body__messages-item-container" v-chat-scroll>
-						<h4 class="chat-body__messages-item-username">{{message.user.username}}</h4>
-						<p>
-							Posted At: {{new Date(message.createdAt).toLocaleDateString()}},
-							<span
-								style="fontSize:12px;"
-							>{{new Date(message.createdAt).toLocaleTimeString()}}</span>
-						</p>
-					</div>
-					<div class="chat-body__message">{{message.message}}</div>
-				</li>
-			</ul>
-		</div>
+		<simplebar data-simplebar-auto-hide="false" class="chat-body__messages-container">
+			<div v-if="messages.length>0">
+				<ul class="chat-body__messages-list" v-for="message in messages" :key="message._id">
+					<li class="chat-body__messages-item">
+						<div class="chat-body__messages-item-container">
+							<h4 class="chat-body__messages-item-username">{{message.user.username}}</h4>
+							<p>
+								Posted At: {{new Date(message.createdAt).toLocaleDateString()}},
+								<span
+									style="fontSize:12px;"
+								>{{new Date(message.createdAt).toLocaleTimeString()}}</span>
+							</p>
+						</div>
+						<div class="chat-body__message">{{message.message}}</div>
+					</li>
+				</ul>
+			</div>
+			<div v-else>Loading messages....</div>
+		</simplebar>
 		<button @click="submit" :disabled="!message.trim().length>0" class="chat-body__button">Submit</button>
 	</div>
 </template>
 
 <script>
 	import { mapState } from "vuex";
+	import simplebar from "simplebar-vue";
+	import "simplebar/dist/simplebar.min.css";
+
 	export default {
+		components: {
+			simplebar
+		},
 		data() {
 			return {
 				message: ""
@@ -47,6 +56,19 @@
 					this.$store.dispatch("pushMessage", data.message);
 				}
 			});
+		},
+		watch: {
+			selectedLobby: function(val, prevVal) {
+				if (val._id !== prevVal._id) {
+					this.$store.dispatch("getUser");
+					this.$store.dispatch("getMessages");
+					this.socket.on("get-new-message", data => {
+						if (data.message.lobby._id === this.selectedLobby._id) {
+							this.$store.dispatch("pushMessage", data.message);
+						}
+					});
+				}
+			}
 		}
 	};
 </script>
@@ -127,6 +149,6 @@
 	.chat-body__message {
 		padding: 1rem 0 0 0;
 		font-size: 1.2rem;
-    font-weight: 100;
+		font-weight: 100;
 	}
 </style>

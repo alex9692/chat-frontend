@@ -11,7 +11,7 @@
 					id="name"
 					type="text"
 					class="sign-up__input"
-					placeholder="enter your username"
+					placeholder="username must be atleast 4 characters long"
 				/>
 				<label for="password">Enter User password:</label>
 				<input
@@ -21,15 +21,17 @@
 					id="password"
 					type="password"
 					class="sign-up__input"
-					placeholder="enter your password"
+					placeholder="password must be atleast 8 characters long"
 				/>
 			</div>
+			<div v-if="error" class="error">{{error.message}}</div>
 			<button :disabled="!allowSubmit" @click="submit" class="sign-up__button">Submit</button>
 		</div>
 	</div>
 </template>
 
 <script>
+	import { mapState } from "vuex";
 	export default {
 		data() {
 			return {
@@ -38,6 +40,7 @@
 			};
 		},
 		computed: {
+			...mapState(["error"]),
 			allowSubmit() {
 				return (
 					this.username &&
@@ -60,8 +63,8 @@
 			},
 			submit() {
 				this.$store.dispatch("register", {
-					username: this.username,
-					password: this.password
+					username: this.username.trim(),
+					password: this.password.trim()
 				});
 			}
 		},
@@ -154,5 +157,10 @@
 	.sign-up__input.invalid {
 		border: 1px solid rgb(121, 9, 9);
 		background: rgb(153, 65, 65);
+	}
+	.error {
+		color: rgb(153, 65, 65);
+		margin: 0 auto;
+		margin-top: 0.4rem;
 	}
 </style>
